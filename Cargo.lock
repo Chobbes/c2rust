@@ -279,6 +279,7 @@ dependencies = [
  "clang-sys",
  "cmake",
  "env_logger",
+ "pkg-config",
  "serde",
  "serde_bytes",
  "serde_cbor",
@@ -1144,6 +1145,12 @@ name = "pin-project-lite"
 version = "0.2.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e0a7ae3ac2f1173085d398531c705756c94a4c56843785df85a60c1a0afac116"
+
+[[package]]
+name = "pkg-config"
+version = "0.3.32"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 
 [[package]]
 name = "polonius-engine"

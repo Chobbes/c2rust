@@ -137,6 +137,7 @@ fn build_native(llvm_info: &LLVMInfo) {
                     &env::var("CMAKE_CLANG_DIR")
                         .unwrap_or_else(|_| format!("{}/cmake/clang", llvm_lib_dir)),
                 )
+                .define("CMAKE_VERBOSE_MAKEFILE", "ON")
                 // What to build
                 .build_target("clangAstExporter")
                 .build();
@@ -150,7 +151,25 @@ fn build_native(llvm_info: &LLVMInfo) {
     };
 
     // Statically link against 'clangAstExporter' which requires 'tinycbor'
-    println!("cargo:rustc-link-lib=static=tinycbor");
+    // Use pkg-config to find the necessary flags for tinycbor
+    match pkg_config::Config::new().probe("tinycbor") {
+        Ok(library) => {
+            // Print the include paths from pkg-config for tinycbor
+            for path in library.include_paths {
+                println!("cargo:rerun-if-changed={}", path.display());
+            }
+
+            // Link the tinycbor library
+            println!("cargo:rustc-link-lib=static=tinycbor");
+            // If you need to link dynamically instead of statically, use:
+            // println!("cargo:rustc-link-lib=dylib=tinycbor");
+        }
+        Err(e) => {
+            // If pkg-config fails, you can provide fallbacks or fail with an error
+            eprintln!("pkg-config error: {}", e);
+            panic!("Failed to find tinycbor via pkg-config");
+        }
+    }
     println!("cargo:rustc-link-lib=static=clangAstExporter");
 
     println!("cargo:rustc-link-search=native={}", llvm_lib_dir);

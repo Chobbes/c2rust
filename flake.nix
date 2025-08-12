@@ -35,12 +35,14 @@
             LIBCLANG_PATH = "${pkgs.llvmPackages_14.libclang.lib}/lib";
             CMAKE_LLVM_DIR = "${pkgs.llvmPackages_14.libllvm.dev}/lib/cmake/llvm";
             CMAKE_CLANG_DIR = "${pkgs.llvmPackages_14.libclang.dev}/lib/cmake/clang";
+            NIX_ENFORCE_NO_NATIVE = 0; # Enable SSE instructions.i
             shellHook = ''
               export CARGO_TARGET_DIR="$(git rev-parse --show-toplevel)/target_dirs/nix_rustc";
             '';
             RUST_SRC_PATH = pkgs.rustPlatform.rustLibSrc;
             buildInputs =
               with pkgs; [
+                tinycbor
                 clangStdenv.cc
                 llvmPackages_14.libclang
                 pkg-config
