@@ -110,7 +110,7 @@
           cargo = fenixToolchain; # rustToolchain;
           rustc = fenixToolchain; # rustToolchain;
         };
-        env = {
+        env = with pkgs; {
           LIBCLANG_PATH = "${myLLVM.libclang.lib}/lib";
           CMAKE_LLVM_DIR = "${myLLVM.libllvm.dev}/lib/cmake/llvm";
           CMAKE_CLANG_DIR = "${myLLVM.libclang.dev}/lib/cmake/clang";
@@ -122,10 +122,41 @@
         };
         in rec {
           packages = {
-            default = rustPlatform.buildRustPackage (env // {
+            default = rustPlatform.buildRustPackage (with pkgs; env // {
                 pname = "c2rust";
                 version = "0.20.0";
                 src = ./.;
+
+shellHook = ''
+    # From: https://github.com/NixOS/nixpkgs/blob/1fab95f5190d087e66a3502481e34e15d62090aa/pkgs/applications/networking/browsers/firefox/common.nix#L247-L253
+    # Set C flags for Rust's bindgen program. Unlike ordinary C
+    # compilation, bindgen does not invoke $CC directly. Instead it
+    # uses LLVM's libclang. To make sure all necessary flags are
+    # included we need to look in a few places.
+    export BINDGEN_EXTRA_CLANG_ARGS="$(< ${stdenv.cc}/nix-support/libc-crt1-cflags) \
+      $(< ${stdenv.cc}/nix-support/libc-cflags) \
+      $(< ${stdenv.cc}/nix-support/cc-cflags) \
+      $(< ${stdenv.cc}/nix-support/libcxx-cxxflags) \
+      ${lib.optionalString stdenv.cc.isClang "-idirafter ${stdenv.cc.cc}/lib/clang/${lib.getVersion stdenv.cc.cc}/include"} \
+      ${lib.optionalString stdenv.cc.isGNU "-isystem ${stdenv.cc.cc}/include/c++/${lib.getVersion stdenv.cc.cc} -isystem ${stdenv.cc.cc}/include/c++/${lib.getVersion stdenv.cc.cc}/${stdenv.hostPlatform.config} -idirafter ${stdenv.cc.cc}/lib/gcc/${stdenv.hostPlatform.config}/${lib.getVersion stdenv.cc.cc}/include"} \
+    "
+  '';
+
+  preBuild = ''
+    # From: https://github.com/NixOS/nixpkgs/blob/1fab95f5190d087e66a3502481e34e15d62090aa/pkgs/applications/networking/browsers/firefox/common.nix#L247-L253
+    # Set C flags for Rust's bindgen program. Unlike ordinary C
+    # compilation, bindgen does not invoke $CC directly. Instead it
+    # uses LLVM's libclang. To make sure all necessary flags are
+    # included we need to look in a few places.
+    export BINDGEN_EXTRA_CLANG_ARGS="$(< ${stdenv.cc}/nix-support/libc-crt1-cflags) \
+      $(< ${stdenv.cc}/nix-support/libc-cflags) \
+      $(< ${stdenv.cc}/nix-support/cc-cflags) \
+      $(< ${stdenv.cc}/nix-support/libcxx-cxxflags) \
+      ${lib.optionalString stdenv.cc.isClang "-idirafter ${stdenv.cc.cc}/lib/clang/${lib.getVersion stdenv.cc.cc}/include"} \
+      ${lib.optionalString stdenv.cc.isGNU "-isystem ${stdenv.cc.cc}/include/c++/${lib.getVersion stdenv.cc.cc} -isystem ${stdenv.cc.cc}/include/c++/${lib.getVersion stdenv.cc.cc}/${stdenv.hostPlatform.config} -idirafter ${stdenv.cc.cc}/lib/gcc/${stdenv.hostPlatform.config}/${lib.getVersion stdenv.cc.cc}/include"} \
+    "
+  '';
+
                 
             #     shellHook = ''
             #   export CARGO_TARGET_DIR="$(git rev-parse --show-toplevel)/target_dirs/nix_rustc";
@@ -166,10 +197,45 @@
                 #     zlib
                 #   ];
 
+                # nativeBuildInputs =
+                #   with pkgs; [
+                #     pkg-config
+                #     cmake
+                #   ];
+
                 nativeBuildInputs =
                   with pkgs; [
+                    clang18Stdenv.cc
+                    myLLVM.libclang
                     pkg-config
+#                    fenix.packages.${system}.rust-analyzer
+                    myLLVM.clang
                     cmake
+                    myLLVM.llvm
+                    myLLVM.libllvm
+                    tinycbor
+                    openssl
+                    (python3.withPackages
+                      (python-pkgs:
+                        with python-pkgs;
+                        [ "bencode-python3"
+                          cbor
+                          colorlog
+                          mako
+                          pip
+                          plumbum
+                          psutil
+                          pygments
+                          typing
+                          "scan-build"
+                          pyyaml
+                          toml
+                        ]
+                      )
+                    )
+                    zlib
+                    fenixToolchain
+                    # (rust-bin.fromRustupToolchainFile ./rust-toolchain.toml)
                   ];
 
                 buildInputs =
@@ -255,7 +321,21 @@
 
           devShells = {
             # Include a fixed version of clang in the development environment for testing.
-            default = pkgs.mkShell (env // {
+            default = pkgs.mkShell (with pkgs; env // {
+shellHook = ''
+    # From: https://github.com/NixOS/nixpkgs/blob/1fab95f5190d087e66a3502481e34e15d62090aa/pkgs/applications/networking/browsers/firefox/common.nix#L247-L253
+    # Set C flags for Rust's bindgen program. Unlike ordinary C
+    # compilation, bindgen does not invoke $CC directly. Instead it
+    # uses LLVM's libclang. To make sure all necessary flags are
+    # included we need to look in a few places.
+    export BINDGEN_EXTRA_CLANG_ARGS="$(< ${stdenv.cc}/nix-support/libc-crt1-cflags) \
+      $(< ${stdenv.cc}/nix-support/libc-cflags) \
+      $(< ${stdenv.cc}/nix-support/cc-cflags) \
+      $(< ${stdenv.cc}/nix-support/libcxx-cxxflags) \
+      ${lib.optionalString stdenv.cc.isClang "-idirafter ${stdenv.cc.cc}/lib/clang/${lib.getVersion stdenv.cc.cc}/include"} \
+      ${lib.optionalString stdenv.cc.isGNU "-isystem ${stdenv.cc.cc}/include/c++/${lib.getVersion stdenv.cc.cc} -isystem ${stdenv.cc.cc}/include/c++/${lib.getVersion stdenv.cc.cc}/${stdenv.hostPlatform.config} -idirafter ${stdenv.cc.cc}/lib/gcc/${stdenv.hostPlatform.config}/${lib.getVersion stdenv.cc.cc}/include"} \
+    "
+  '';
             #     shellHook = ''
             #   export CARGO_TARGET_DIR="$(git rev-parse --show-toplevel)/target_dirs/nix_rustc";
             # '';
