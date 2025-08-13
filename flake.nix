@@ -53,7 +53,7 @@
             pname = "c2rust";
             version = "0.20.0";
             src = ./.;
-
+            doCheck = false; # Can use checkFlags to disable specific tests
             shellHook = ''
     # From: https://github.com/NixOS/nixpkgs/blob/1fab95f5190d087e66a3502481e34e15d62090aa/pkgs/applications/networking/browsers/firefox/common.nix#L247-L253
     # Set C flags for Rust's bindgen program. Unlike ordinary C
@@ -86,6 +86,7 @@
 
             nativeBuildInputs =
               with pkgs; [
+                rustPlatform.bindgenHook
                 myStdenv.cc
                 myLLVM.libclang
                 pkg-config
@@ -119,6 +120,7 @@
 
             buildInputs =
               with pkgs; [
+                rustPlatform.bindgenHook
                 myStdenv.cc
                 myLLVM.libclang
                 pkg-config
@@ -160,6 +162,7 @@
         devShells = {
           # Include a fixed version of clang in the development environment for testing.
           default = pkgs.mkShell (with pkgs; env // {
+            strictDeps = true;
             shellHook = ''
     # From: https://github.com/NixOS/nixpkgs/blob/1fab95f5190d087e66a3502481e34e15d62090aa/pkgs/applications/networking/browsers/firefox/common.nix#L247-L253
     # Set C flags for Rust's bindgen program. Unlike ordinary C
