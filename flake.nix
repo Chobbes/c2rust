@@ -72,7 +72,8 @@
             allowUnfree = true;
           };
         };
-        myLLVM = pkgs.llvmPackages_18;
+        myLLVM = pkgs.llvmPackages_14;
+        myStdenv = pkgs.clang14Stdenv;
         # rustToolchain = pkgs.rust-bin.stable."1.65.0".default; # fromRustupToolchainFile ./rust-toolchain.toml;
         # pkgs.rust-bin.selectLatestNightlyWith (toolchain: toolchain.default); # 
   #       # 2. Wrap it so LD_LIBRARY_PATH includes the LLVM libs
@@ -133,12 +134,12 @@ shellHook = ''
     # compilation, bindgen does not invoke $CC directly. Instead it
     # uses LLVM's libclang. To make sure all necessary flags are
     # included we need to look in a few places.
-    export BINDGEN_EXTRA_CLANG_ARGS="$(< ${stdenv.cc}/nix-support/libc-crt1-cflags) \
-      $(< ${stdenv.cc}/nix-support/libc-cflags) \
-      $(< ${stdenv.cc}/nix-support/cc-cflags) \
-      $(< ${stdenv.cc}/nix-support/libcxx-cxxflags) \
-      ${lib.optionalString stdenv.cc.isClang "-idirafter ${stdenv.cc.cc}/lib/clang/${lib.getVersion stdenv.cc.cc}/include"} \
-      ${lib.optionalString stdenv.cc.isGNU "-isystem ${stdenv.cc.cc}/include/c++/${lib.getVersion stdenv.cc.cc} -isystem ${stdenv.cc.cc}/include/c++/${lib.getVersion stdenv.cc.cc}/${stdenv.hostPlatform.config} -idirafter ${stdenv.cc.cc}/lib/gcc/${stdenv.hostPlatform.config}/${lib.getVersion stdenv.cc.cc}/include"} \
+    export BINDGEN_EXTRA_CLANG_ARGS="$(< ${myStdenv.cc}/nix-support/libc-crt1-cflags) \
+      $(< ${myStdenv.cc}/nix-support/libc-cflags) \
+      $(< ${myStdenv.cc}/nix-support/cc-cflags) \
+      $(< ${myStdenv.cc}/nix-support/libcxx-cxxflags) \
+      ${lib.optionalString myStdenv.cc.isClang "-idirafter ${myStdenv.cc.cc}/lib/clang/${lib.getVersion myStdenv.cc.cc}/include"} \
+      ${lib.optionalString myStdenv.cc.isGNU "-isystem ${myStdenv.cc.cc}/include/c++/${lib.getVersion myStdenv.cc.cc} -isystem ${myStdenv.cc.cc}/include/c++/${lib.getVersion myStdenv.cc.cc}/${myStdenv.hostPlatform.config} -idirafter ${myStdenv.cc.cc}/lib/gcc/${myStdenv.hostPlatform.config}/${lib.getVersion myStdenv.cc.cc}/include"} \
     "
   '';
 
@@ -148,12 +149,12 @@ shellHook = ''
     # compilation, bindgen does not invoke $CC directly. Instead it
     # uses LLVM's libclang. To make sure all necessary flags are
     # included we need to look in a few places.
-    export BINDGEN_EXTRA_CLANG_ARGS="$(< ${stdenv.cc}/nix-support/libc-crt1-cflags) \
-      $(< ${stdenv.cc}/nix-support/libc-cflags) \
-      $(< ${stdenv.cc}/nix-support/cc-cflags) \
-      $(< ${stdenv.cc}/nix-support/libcxx-cxxflags) \
-      ${lib.optionalString stdenv.cc.isClang "-idirafter ${stdenv.cc.cc}/lib/clang/${lib.getVersion stdenv.cc.cc}/include"} \
-      ${lib.optionalString stdenv.cc.isGNU "-isystem ${stdenv.cc.cc}/include/c++/${lib.getVersion stdenv.cc.cc} -isystem ${stdenv.cc.cc}/include/c++/${lib.getVersion stdenv.cc.cc}/${stdenv.hostPlatform.config} -idirafter ${stdenv.cc.cc}/lib/gcc/${stdenv.hostPlatform.config}/${lib.getVersion stdenv.cc.cc}/include"} \
+    export BINDGEN_EXTRA_CLANG_ARGS="$(< ${myStdenv.cc}/nix-support/libc-crt1-cflags) \
+      $(< ${myStdenv.cc}/nix-support/libc-cflags) \
+      $(< ${myStdenv.cc}/nix-support/cc-cflags) \
+      $(< ${myStdenv.cc}/nix-support/libcxx-cxxflags) \
+      ${lib.optionalString myStdenv.cc.isClang "-idirafter ${myStdenv.cc.cc}/lib/clang/${lib.getVersion myStdenv.cc.cc}/include"} \
+      ${lib.optionalString myStdenv.cc.isGNU "-isystem ${myStdenv.cc.cc}/include/c++/${lib.getVersion myStdenv.cc.cc} -isystem ${myStdenv.cc.cc}/include/c++/${lib.getVersion myStdenv.cc.cc}/${myStdenv.hostPlatform.config} -idirafter ${myStdenv.cc.cc}/lib/gcc/${myStdenv.hostPlatform.config}/${lib.getVersion myStdenv.cc.cc}/include"} \
     "
   '';
 
@@ -166,8 +167,8 @@ shellHook = ''
                 #   with pkgs; [
                 #     pkg-config
                 #     cmake
-                #     clang18Stdenv.cc
-                #     clang18Stdenv.cc.libc
+                #     clang18MyStdenv.cc
+                #     clang18MyStdenv.cc.libc
                 #     myLLVM.libclang
                 #     myLLVM.clang
                 #     myLLVM.llvm
@@ -205,7 +206,7 @@ shellHook = ''
 
                 nativeBuildInputs =
                   with pkgs; [
-                    clang18Stdenv.cc
+                    myStdenv.cc
                     myLLVM.libclang
                     pkg-config
 #                    fenix.packages.${system}.rust-analyzer
@@ -240,7 +241,7 @@ shellHook = ''
 
                 buildInputs =
                   with pkgs; [
-                    clang18Stdenv.cc
+                    myStdenv.cc
                     myLLVM.libclang
                     pkg-config
 #                    fenix.packages.${system}.rust-analyzer
@@ -328,12 +329,12 @@ shellHook = ''
     # compilation, bindgen does not invoke $CC directly. Instead it
     # uses LLVM's libclang. To make sure all necessary flags are
     # included we need to look in a few places.
-    export BINDGEN_EXTRA_CLANG_ARGS="$(< ${stdenv.cc}/nix-support/libc-crt1-cflags) \
-      $(< ${stdenv.cc}/nix-support/libc-cflags) \
-      $(< ${stdenv.cc}/nix-support/cc-cflags) \
-      $(< ${stdenv.cc}/nix-support/libcxx-cxxflags) \
-      ${lib.optionalString stdenv.cc.isClang "-idirafter ${stdenv.cc.cc}/lib/clang/${lib.getVersion stdenv.cc.cc}/include"} \
-      ${lib.optionalString stdenv.cc.isGNU "-isystem ${stdenv.cc.cc}/include/c++/${lib.getVersion stdenv.cc.cc} -isystem ${stdenv.cc.cc}/include/c++/${lib.getVersion stdenv.cc.cc}/${stdenv.hostPlatform.config} -idirafter ${stdenv.cc.cc}/lib/gcc/${stdenv.hostPlatform.config}/${lib.getVersion stdenv.cc.cc}/include"} \
+    export BINDGEN_EXTRA_CLANG_ARGS="$(< ${myStdenv.cc}/nix-support/libc-crt1-cflags) \
+      $(< ${myStdenv.cc}/nix-support/libc-cflags) \
+      $(< ${myStdenv.cc}/nix-support/cc-cflags) \
+      $(< ${myStdenv.cc}/nix-support/libcxx-cxxflags) \
+      ${lib.optionalString myStdenv.cc.isClang "-idirafter ${myStdenv.cc.cc}/lib/clang/${lib.getVersion myStdenv.cc.cc}/include"} \
+      ${lib.optionalString myStdenv.cc.isGNU "-isystem ${myStdenv.cc.cc}/include/c++/${lib.getVersion myStdenv.cc.cc} -isystem ${myStdenv.cc.cc}/include/c++/${lib.getVersion myStdenv.cc.cc}/${myStdenv.hostPlatform.config} -idirafter ${myStdenv.cc.cc}/lib/gcc/${myStdenv.hostPlatform.config}/${lib.getVersion myStdenv.cc.cc}/include"} \
     "
   '';
             #     shellHook = ''
