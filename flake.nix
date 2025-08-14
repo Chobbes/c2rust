@@ -54,36 +54,6 @@
             version = "0.20.0";
             src = ./.;
             doCheck = false; # Can use checkFlags to disable specific tests
-            shellHook = ''
-    # From: https://github.com/NixOS/nixpkgs/blob/1fab95f5190d087e66a3502481e34e15d62090aa/pkgs/applications/networking/browsers/firefox/common.nix#L247-L253
-    # Set C flags for Rust's bindgen program. Unlike ordinary C
-    # compilation, bindgen does not invoke $CC directly. Instead it
-    # uses LLVM's libclang. To make sure all necessary flags are
-    # included we need to look in a few places.
-    export BINDGEN_EXTRA_CLANG_ARGS="$(< ${myStdenv.cc}/nix-support/libc-crt1-cflags) \
-      $(< ${myStdenv.cc}/nix-support/libc-cflags) \
-      $(< ${myStdenv.cc}/nix-support/cc-cflags) \
-      $(< ${myStdenv.cc}/nix-support/libcxx-cxxflags) \
-      ${lib.optionalString myStdenv.cc.isClang "-idirafter ${myStdenv.cc.cc}/lib/clang/${lib.getVersion myStdenv.cc.cc}/include"} \
-      ${lib.optionalString myStdenv.cc.isGNU "-isystem ${myStdenv.cc.cc}/include/c++/${lib.getVersion myStdenv.cc.cc} -isystem ${myStdenv.cc.cc}/include/c++/${lib.getVersion myStdenv.cc.cc}/${myStdenv.hostPlatform.config} -idirafter ${myStdenv.cc.cc}/lib/gcc/${myStdenv.hostPlatform.config}/${lib.getVersion myStdenv.cc.cc}/include"} \
-    "
-  '';
-
-            preBuild = ''
-    # From: https://github.com/NixOS/nixpkgs/blob/1fab95f5190d087e66a3502481e34e15d62090aa/pkgs/applications/networking/browsers/firefox/common.nix#L247-L253
-    # Set C flags for Rust's bindgen program. Unlike ordinary C
-    # compilation, bindgen does not invoke $CC directly. Instead it
-    # uses LLVM's libclang. To make sure all necessary flags are
-    # included we need to look in a few places.
-    export BINDGEN_EXTRA_CLANG_ARGS="$(< ${myStdenv.cc}/nix-support/libc-crt1-cflags) \
-      $(< ${myStdenv.cc}/nix-support/libc-cflags) \
-      $(< ${myStdenv.cc}/nix-support/cc-cflags) \
-      $(< ${myStdenv.cc}/nix-support/libcxx-cxxflags) \
-      ${lib.optionalString myStdenv.cc.isClang "-idirafter ${myStdenv.cc.cc}/lib/clang/${lib.getVersion myStdenv.cc.cc}/include"} \
-      ${lib.optionalString myStdenv.cc.isGNU "-isystem ${myStdenv.cc.cc}/include/c++/${lib.getVersion myStdenv.cc.cc} -isystem ${myStdenv.cc.cc}/include/c++/${lib.getVersion myStdenv.cc.cc}/${myStdenv.hostPlatform.config} -idirafter ${myStdenv.cc.cc}/lib/gcc/${myStdenv.hostPlatform.config}/${lib.getVersion myStdenv.cc.cc}/include"} \
-    "
-  '';
-
             nativeBuildInputs =
               with pkgs; [
                 rustPlatform.bindgenHook
@@ -163,21 +133,6 @@
           # Include a fixed version of clang in the development environment for testing.
           default = pkgs.mkShell (with pkgs; env // {
             strictDeps = true;
-            shellHook = ''
-    # From: https://github.com/NixOS/nixpkgs/blob/1fab95f5190d087e66a3502481e34e15d62090aa/pkgs/applications/networking/browsers/firefox/common.nix#L247-L253
-    # Set C flags for Rust's bindgen program. Unlike ordinary C
-    # compilation, bindgen does not invoke $CC directly. Instead it
-    # uses LLVM's libclang. To make sure all necessary flags are
-    # included we need to look in a few places.
-    export BINDGEN_EXTRA_CLANG_ARGS="$(< ${myStdenv.cc}/nix-support/libc-crt1-cflags) \
-      $(< ${myStdenv.cc}/nix-support/libc-cflags) \
-      $(< ${myStdenv.cc}/nix-support/cc-cflags) \
-      $(< ${myStdenv.cc}/nix-support/libcxx-cxxflags) \
-      ${lib.optionalString myStdenv.cc.isClang "-idirafter ${myStdenv.cc.cc}/lib/clang/${lib.getVersion myStdenv.cc.cc}/include"} \
-      ${lib.optionalString myStdenv.cc.isGNU "-isystem ${myStdenv.cc.cc}/include/c++/${lib.getVersion myStdenv.cc.cc} -isystem ${myStdenv.cc.cc}/include/c++/${lib.getVersion myStdenv.cc.cc}/${myStdenv.hostPlatform.config} -idirafter ${myStdenv.cc.cc}/lib/gcc/${myStdenv.hostPlatform.config}/${lib.getVersion myStdenv.cc.cc}/include"} \
-    "
-  '';
-
             inputsFrom = [ packages.default ];
             buildInputs = [ ];
           });
