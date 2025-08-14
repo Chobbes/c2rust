@@ -30,8 +30,8 @@
           };
         };
 
-        myLLVM = pkgs.llvmPackages_14;
-        myStdenv = pkgs.clang14Stdenv;
+        myLLVM = pkgs.llvmPackages_18;
+        myStdenv = pkgs.clang18Stdenv;
 
         rustPlatform = pkgs.makeRustPlatform {
           cargo = fenixToolchain; # rustToolchain;

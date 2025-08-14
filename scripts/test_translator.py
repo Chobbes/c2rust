@@ -243,11 +243,26 @@ class TestDirectory:
         # are broken without it on macOS 12.
         # limit this to macOS because if we do happen to have multiple versions of Clang around, we
         # don't know which to use here, and using the wrong can one break things badly
-        if sys.platform == "darwin":
-            _, stdout, _ = clang["-print-resource-dir"].run(retcode=None)
-            self.clang_resource_dir = " \"-I{}/include\",".format(stdout.strip())
-        else:
-            self.clang_resource_dir = ""
+        _, stdout, _ = clang["-print-resource-dir"].run(retcode=None)
+        self.clang_resource_dir = " \"-I{}/include\",".format(stdout.strip()) + ''.join(
+        [ " \"-I/nix/store/74qjr01q87nwfl0dbsr1s45p8crw3q1f-glibc-2.40-66-dev/include\",",
+          " \"-I/nix/store/pqy858gyg7d8c9p7k587023sardl4wfh-compiler-rt-libc-18.1.8-dev/include\",",
+          " \"-I/nix/store/pqy858gyg7d8c9p7k587023sardl4wfh-compiler-rt-libc-18.1.8-dev/include\",",
+          " \"-I/nix/store/3yb3a900z5r0x678d8pp46gwab8bbki5-clang-18.1.8-dev/include\",",
+          " \"-I/nix/store/3yb3a900z5r0x678d8pp46gwab8bbki5-clang-18.1.8-dev/include\",",
+          " \"-I/nix/store/fhdpk4fpgpdkkf8pdl6px5lmnp42z3fz-llvm-18.1.8-dev/include\",",
+          " \"-I/nix/store/fhdpk4fpgpdkkf8pdl6px5lmnp42z3fz-llvm-18.1.8-dev/include\",",
+          " \"-I/nix/store/z1l05nn4xyaxv25f9pvi7bkmw6jmb48c-ncurses-6.5-dev/include\",",
+          " \"-I/nix/store/z1l05nn4xyaxv25f9pvi7bkmw6jmb48c-ncurses-6.5-dev/include\",",
+          " \"-I/nix/store/qjh11kgxv245166f27017hwx2fvmwh8p-zlib-1.3.1-dev/include\",",
+          " \"-I/nix/store/qjh11kgxv245166f27017hwx2fvmwh8p-zlib-1.3.1-dev/include\",",
+          " \"-I/nix/store/7qggxrwirl36a4cgab3q5kzbira2gbqi-tinycbor-0.6.1/include\",",
+          " \"-I/nix/store/7qggxrwirl36a4cgab3q5kzbira2gbqi-tinycbor-0.6.1/include\",",
+          " \"-I/nix/store/b97gjl5zygaf6vzxsa1lf7jih8q4xi00-openssl-3.5.1-dev/include\",",
+          " \"-I/nix/store/b97gjl5zygaf6vzxsa1lf7jih8q4xi00-openssl-3.5.1-dev/include\",",
+          " \"-I/nix/store/wjga2z6rqfxbn13hzsfz4mzisqb5if3v-python3-3.13.5-env/include\",",
+          " \"-I/nix/store/wjga2z6rqfxbn13hzsfz4mzisqb5if3v-python3-3.13.5-env/include\","
+         ])
 
         # parse target arch from directory name if it includes a dot
         split_by_dots = self.name.split('.')
